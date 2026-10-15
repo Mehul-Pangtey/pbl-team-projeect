@@ -37,7 +37,7 @@ Modern cities comprise complex interconnected systems including roads, buildings
 * [ ] Interface Design & Dashboard Layout
 * [ ] Road Network Graph Implementation (Adjacency List)
 * [ ] Building & Population Module Setup
-* [ ] Vehicle Module & Location Tracking
+* [ ] Vehicle Module 
 * [ ] Dijkstra’s Shortest-Path Integration
 * [ ] Emergency & Food-Delivery Routing
 * [ ] Traffic Management via Queues & Priority Queues
