@@ -43,9 +43,9 @@ Our project, **Virtual City Simulator**, addresses this challenge by providing a
 
 ## 💻 5. Technology Used & Tech Stack
 * **Core Simulation & Logic Engine:** C++ (utilizing Standard Template Library vectors, queues, priority queues, and custom class structures).
-* **Frontend & Dashboard:** HTML5, CSS3, and JavaScript for rendering an intuitive visual representation and control interface[cite: 1, 2].
+* **Frontend & Dashboard:** HTML5, CSS3, and JavaScript for rendering an intuitive visual representation and control interface.
 * **Algorithm Design:** Graph theory, Dijkstra’s shortest path algorithm, and priority-based scheduling logic.
-* **Development Methodology:** Modular software architecture enabling isolated component design, unit testing, and smooth system integration[cite: 1, 2].
+* **Development Methodology:** Modular software architecture enabling isolated component design, unit testing, and smooth system integration.
 
 ---
 
@@ -75,3 +75,37 @@ The application runs on a modular, decoupled architecture where individual subsy
 │   Traffic Management    │     │  Resources & Finance    │
 │  (Queues/Priority Qs)   │     │ (Water, Power, Budgets) │
 └─────────────────────────┘     └─────────────────────────┘
+```
+
+🚀 7. Getting Started
+To get a local copy up and running, follow these simple steps:
+
+Clone the repository:
+
+Bash
+git clone [https://github.com/ucss-mehul/Virtual-City-Simulator.git](https://github.com/ucss-mehul/Virtual-City-Simulator.git)
+Navigate to the project directory:
+
+Bash
+cd Virtual-City-Simulator
+Compile and Run the Core C++ Engine:
+
+Bash
+g++ -std=c++17 src/main.cpp -o simulator
+./simulator
+Launch the Dashboard:
+
+Open src/index.html in your web browser to interact with the visual interface and monitoring panel.
+
+👥 8. Team Details
+Name	Role / Section	University Roll No.	Student ID	Email
+Mehul Pangtey (Team Lead)	Section B	2518462	25101281550	ucss.mehul@gmail.com
+Parakram Bhatt	Section A	2518503	25101280890	parakrambhatt30@gmail.com
+Abhinav Chauhan	Section A	2518120	25101280513	kumarabhinav4545@gmail.com
+Anjali Nawani	Section C	2518199	25101281728	anjali.nawani19@gmail.com
+Shaurya Goel	Section ML1	2518637	2510011439	goelshaurya7488@gmail.com
+Piyush Bani Bani	Section C	2518514	25101280853	pbani5833@gmail.com
+🙏 9. Thank You
+Thank you for checking out the Virtual City Simulator repository! We hope this platform demonstrates a clean and practical integration of core computer science fundamentals with real-world problem-solving.
+
+If you find this project useful or interesting, consider giving it a star ⭐! Feel free to open issues or contribute to the development roadmap.
