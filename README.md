@@ -77,35 +77,63 @@ The application runs on a modular, decoupled architecture where individual subsy
 └─────────────────────────┘     └─────────────────────────┘
 ```
 
-🚀 7. Getting Started
-To get a local copy up and running, follow these simple steps:
+## 🚀 7. Getting Started
 
-Clone the repository:
+Follow these simple steps to get a local copy of the **Virtual City Simulator** up and running.
 
-Bash
-git clone [https://github.com/ucss-mehul/Virtual-City-Simulator.git](https://github.com/ucss-mehul/Virtual-City-Simulator.git)
-Navigate to the project directory:
+### Step 1: Clone the Repository
 
-Bash
+```bash
+git clone https://github.com/ucss-mehul/Virtual-City-Simulator.git
+```
+
+### Step 2: Navigate to the Project Directory
+
+```bash
 cd Virtual-City-Simulator
-Compile and Run the Core C++ Engine:
+```
 
-Bash
+### Step 3: Compile and Run the Core C++ Engine
+
+Compile the project using `g++` with C++17 support:
+
+```bash
 g++ -std=c++17 src/main.cpp -o simulator
+```
+
+Run the simulator:
+
+```bash
 ./simulator
-Launch the Dashboard:
+```
 
-Open src/index.html in your web browser to interact with the visual interface and monitoring panel.
+### Step 4: Launch the Dashboard
 
-👥 8. Team Details
-Name	Role / Section	University Roll No.	Student ID	Email
-Mehul Pangtey (Team Lead)	Section B	2518462	25101281550	ucss.mehul@gmail.com
-Parakram Bhatt	Section A	2518503	25101280890	parakrambhatt30@gmail.com
-Abhinav Chauhan	Section A	2518120	25101280513	kumarabhinav4545@gmail.com
-Anjali Nawani	Section C	2518199	25101281728	anjali.nawani19@gmail.com
-Shaurya Goel	Section ML1	2518637	2510011439	goelshaurya7488@gmail.com
-Piyush Bani Bani	Section C	2518514	25101280853	pbani5833@gmail.com
-🙏 9. Thank You
-Thank you for checking out the Virtual City Simulator repository! We hope this platform demonstrates a clean and practical integration of core computer science fundamentals with real-world problem-solving.
+Open `src/index.html` in your web browser to interact with the visual dashboard and monitoring panel.
 
-If you find this project useful or interesting, consider giving it a star ⭐! Feel free to open issues or contribute to the development roadmap.
+---
+
+## 👥 8. Team Details
+
+The **Virtual City Simulator** is developed by a team of six members.
+
+| Name | Role / Section | University Roll No. | Student ID | Email |
+|---|---|---|---|---|
+| Mehul Pangtey | Team Lead / Section B | 2518462 | 25101281550 | ucss.mehul@gmail.com |
+| Parakram Bhatt | Section A | 2518503 | 25101280890 | parakrambhatt30@gmail.com |
+| Abhinav Chauhan | Section A | 2518120 | 25101280513 | kumarabhinav4545@gmail.com |
+| Anjali Nawani | Section C | 2518199 | 25101281728 | anjali.nawani19@gmail.com |
+| Shaurya Goel | Section ML1 | 2518637 | 2510011439 | goelshaurya7488@gmail.com |
+| Piyush Bani Bani | Section C | 2518514 | 25101280853 | pbani5833@gmail.com |
+
+---
+
+## 🙏 9. Thank You
+
+Thank you for checking out the **Virtual City Simulator** repository!
+
+We hope this project demonstrates a clean and practical integration of **Data Structures and Algorithms (DSA), Object-Oriented Programming (OOP), and C++** to solve real-world urban simulation problems.
+
+If you find this project useful or interesting, consider giving the repository a star ⭐.
+
+We welcome suggestions, feedback, and contributions to help improve the project and expand its features.
