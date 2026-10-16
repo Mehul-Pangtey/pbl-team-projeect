@@ -14,7 +14,6 @@ In **Phase 2**, we have implemented the core C++ backend simulation engine, inte
 - Road Network using a Weighted Undirected Graph
 - Building and Population Management
 - Vehicle Management and Route Optimization using Dijkstra's Algorithm
-- Advanced Traffic Management using Queues, Priority Queues, and Anti-Starvation Rules
 
 The project demonstrates the practical application of **Data Structures and Algorithms (DSA)** and **Object-Oriented Programming (OOP)** in an urban simulation environment.
 
@@ -23,7 +22,6 @@ The project demonstrates the practical application of **Data Structures and Algo
 ## ⚙️ Technology Stack
 
 - **Backend:** C++
-- **Frontend:** HTML, CSS
 - **Data Structures:** Graphs, Vectors, Queues, Priority Queues
 - **Graph Representation:** Adjacency List
 - **Algorithms:** Dijkstra's Algorithm, Breadth-First Search (BFS), Depth-First Search (DFS)
@@ -54,12 +52,6 @@ Manages different vehicle types:
 
 Vehicle status can include parked, moving, or completed.
 
-### 5. Traffic Management Module
-- Manages vehicle queues at traffic-controlled intersections.
-- Uses queues and priority queues for traffic management.
-- Supports dynamic priority based on waiting conditions.
-- Implements a 60-second anti-starvation rule to help prevent vehicles from waiting indefinitely.
-
 ---
 
 ## 🧠 Data Structures & Algorithms Used
@@ -83,9 +75,9 @@ Vehicle status can include parked, moving, or completed.
 - [x] Road Network Graph Implementation
 - [x] Building & Population Module
 - [x] Vehicle Management 
-- [ ] Dijkstra's Shortest-Path Integration
+- [x] Dijkstra's Shortest-Path Integration
 - [ ] Emergency & Food-Delivery Routing
-- [x] Traffic Management using Queues & Priority Queues
+- [ ] Traffic Management using Queues & Priority Queues
 - [ ] Resources & City Finance Integration
 - [ ] Complete System Integration and Testing
 - [ ] Final Demonstration
@@ -147,6 +139,7 @@ simulator.exe
 - City budget and resource allocation
 - Enhanced traffic visualization
 - Dijkstra's Shortest-Path Integration
+- Traffic Management using Queues & Priority Queues
 - Emergency & Food-Delivery Routing
 - Real-time simulation updates
 - Improved frontend and backend integration
