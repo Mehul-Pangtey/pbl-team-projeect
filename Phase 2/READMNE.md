@@ -1,7 +1,7 @@
 # Virtual City Simulator
 
 > **PBL Phase 1 Project Proposal**  
-> **Team Name:** ucss.mehul[cite: 1, 2]
+> **Team Name:** ucss.mehul
 
 ---
 
