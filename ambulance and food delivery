@@ -1,3 +1,4 @@
+//this section describe the working part of delivery which cover a distance from a specific restuarant to a house 
 void placeFoodDelivery(RoadNetwork &city, VehicleManager &vehicles) {
     cout << "\n--- FOOD DELIVERY SERVICE ---\n";
     int restaurant = selectBuildingIntersection(
@@ -13,6 +14,7 @@ void placeFoodDelivery(RoadNetwork &city, VehicleManager &vehicles) {
     vehicles.create("DeliveryBike", restaurant, house, false, city);
 }
 
+//this section describe the working part of ambulance from hospital to the accident road
 void requestAmbulance(RoadNetwork &city, VehicleManager &vehicles) {
     cout << "\n--- AMBULANCE EMERGENCY SERVICE ---\n";
     int hospital = selectBuildingIntersection(
