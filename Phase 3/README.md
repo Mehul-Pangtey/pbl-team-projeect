@@ -135,5 +135,4 @@ simulator.exe
 - Import real city maps from OpenStreetMap
 - Faster routing on large maps using A* search
 - Smart traffic signal timing to reduce congestion
-- Disaster scenarios such as road closures and power outages
 - Public transport simulation (buses and metro)
