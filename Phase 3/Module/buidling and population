@@ -1,0 +1,175 @@
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int MAX = 100;
+
+ //Structure to store building details
+struct Building {
+    string id;
+    string type;
+    int intersection;
+    int population;
+};
+
+class BuildingManagement {
+public:
+    Building buildings[MAX];
+    int buildingCount;
+
+    // Constructor
+    BuildingManagement() {
+        buildingCount = 0;
+    }
+
+    // Add a new building
+    bool addBuilding(string id, string type,
+                     int intersection, int population = 0) {
+
+        if (buildingCount >= MAX || id == "" ||
+            intersection < 0 || population < 0) {
+            return false;
+        }
+
+        if (type != "House" &&
+            type != "Hospital" &&
+            type != "Restaurant") {
+            return false;
+        }
+
+        // Check duplicate building ID
+        for (int i = 0; i < buildingCount; i++) {
+            if (buildings[i].id == id) {
+                return false;
+            }
+        }
+
+        // Only houses have population
+        if (type != "House") {
+            population = 0;
+        }
+
+        buildings[buildingCount++] =
+            {id, type, intersection, population};
+
+        return true;
+    }
+
+    // Display all buildings
+    void displayBuildings() {
+        cout << "\n========== BUILDING DETAILS ==========\n";
+
+        if (buildingCount == 0) {
+            cout << "No buildings registered.\n";
+            return;
+        }
+
+        for (int i = 0; i < buildingCount; i++) {
+            cout << "\nBuilding ID: " << buildings[i].id;
+            cout << "\nBuilding Type: " << buildings[i].type;
+            cout << "\nIntersection: I"
+                 << buildings[i].intersection;
+
+            if (buildings[i].type == "House") {
+                cout << "\nPopulation: "
+                     << buildings[i].population;
+            }
+
+            cout << "\n";
+        }
+    }
+
+    // Display population details
+    void displayPopulation() {
+        int total = 0;
+
+        cout << "\n========== POPULATION MANAGEMENT ==========\n";
+
+        for (int i = 0; i < buildingCount; i++) {
+            if (buildings[i].type == "House") {
+                cout << buildings[i].id << ": "
+                     << buildings[i].population
+                     << " people\n";
+
+                total += buildings[i].population;
+            }
+        }
+
+        cout << "\nTotal City Population: " << total << endl;
+    }
+};
+
+int main() {
+    BuildingManagement city;
+    int choice;
+
+    // Initial buildings
+    city.addBuilding("H1", "House", 0, 4);
+    city.addBuilding("H2", "House", 4, 3);
+    city.addBuilding("Hospital1", "Hospital", 1);
+    city.addBuilding("Restaurant1", "Restaurant", 3);
+
+    do {
+        cout << "\n========== VIRTUAL CITY ==========\n";
+        cout << "1. Add Building\n";
+        cout << "2. Display Buildings\n";
+        cout << "3. Display Population\n";
+        cout << "0. Exit\n";
+        cout << "Enter your choice: ";
+
+        cin >> choice;
+
+        switch (choice) {
+
+            case 1: {
+                string id, type;
+                int intersection, population = 0;
+
+                cout << "Enter Building ID: ";
+                cin >> id;
+
+                cout << "Enter Building Type "
+                     << "(House/Hospital/Restaurant): ";
+                cin >> type;
+
+                cout << "Enter Intersection ID: ";
+                cin >> intersection;
+
+                if (type == "House") {
+                    cout << "Enter Population: ";
+                    cin >> population;
+                }
+
+                if (city.addBuilding(id, type,
+                                     intersection, population)) {
+                    cout << "Building added successfully!\n";
+                }
+                else {
+                    cout << "Invalid building details!\n";
+                }
+
+                break;
+            }
+
+            case 2:
+                city.displayBuildings();
+                break;
+
+            case 3:
+                city.displayPopulation();
+                break;
+
+            case 0:
+                cout << "Exiting program...\n";
+                break;
+
+            default:
+                cout << "Invalid choice!\n";
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
+
