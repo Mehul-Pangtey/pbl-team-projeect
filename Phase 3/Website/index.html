@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual City Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ SIDEBAR NAVIGATION ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" class="brand-logo" aria-hidden="true">
+      <rect x="3" y="12" width="7" height="17" rx="1"></rect>
+      <rect x="12" y="5" width="8" height="24" rx="1"></rect>
+      <rect x="22" y="15" width="7" height="14" rx="1"></rect>
+    </svg>
+    <div>
+      <div class="brand-title">Virtual City</div>
+      <div class="brand-sub">Simulator</div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <button class="nav-item active" data-section="dashboard">Overview Dashboard</button>
+    <button class="nav-item" data-section="map">City Map</button>
+    <button class="nav-item" data-section="roads">Road Network</button>
+    <button class="nav-item" data-section="buildings">Buildings</button>
+    <button class="nav-item" data-section="population">Population</button>
+    <button class="nav-item" data-section="traffic">Traffic Management</button>
+    <button class="nav-item" data-section="vehicles">Vehicles</button>
+    <button class="nav-item" data-section="ambulance">Ambulance Service</button>
+    <button class="nav-item" data-section="delivery">Food Delivery</button>
+    <button class="nav-item" data-section="planner">Dijkstra Route Planner</button>
+    <button class="nav-item" data-section="water">Water Management</button>
+    <button class="nav-item" data-section="electricity">Electricity Management</button>
+    <button class="nav-item" data-section="budget">City Budget</button>
+    <button class="nav-item" data-section="reports">Simulation Reports</button>
+    <button class="nav-item" data-section="info">Project Information</button>
+  </nav>
+</aside>
+
+<div class="main">
+
+  <!-- ============ TOP BAR: SIMULATION CONTROLS (visible on every page) ============ -->
+  <header class="topbar">
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="clock">
+      <span class="clock-label">Simulation time</span>
+      <span class="clock-value" id="clockValue">0 s</span>
+      <span class="clock-phase" id="clockPhase">Signal phase 0 / 70</span>
+    </div>
+    <div class="sim-controls">
+      <button class="btn btn-light" data-advance="1">+1 s</button>
+      <button class="btn btn-light" data-advance="10">+10 s</button>
+      <button class="btn btn-light" data-advance="30">+30 s</button>
+      <button class="btn btn-light" data-advance="60">+60 s</button>
+      <form class="custom-advance" id="customAdvanceForm">
+        <input type="number" id="customSeconds" min="0" max="3600" step="1" placeholder="0–3600" aria-label="Custom seconds">
+        <button class="btn btn-light" type="submit">Advance</button>
+      </form>
+      <button class="btn btn-primary" id="autoBtn">Start</button>
+      <select id="autoSpeed" aria-label="Automatic speed">
+        <option value="1000">1×</option>
+        <option value="500">2×</option>
+        <option value="200">5×</option>
+        <option value="100">10×</option>
+      </select>
+      <button class="btn btn-danger-outline" id="resetBtn">Reset</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- ============ 1. OVERVIEW DASHBOARD ============ -->
+    <section class="section active" id="section-dashboard">
+      <div class="section-head">
+        <h1>Overview Dashboard</h1>
+        <p>Live summary of the whole city, calculated from the current simulation state.</p>
+      </div>
+      <div class="kpi-grid" id="dashKpis"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>City map preview</h2><button class="btn btn-link" data-goto="map">Open map</button></div>
+          <div class="map-wrap small"><svg class="city-map" id="miniMap" viewBox="0 0 1000 620" role="img" aria-label="City map preview"></svg></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Current traffic</h2><button class="btn btn-link" data-goto="traffic">Details</button></div>
+          <div id="dashTraffic"></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card"><div class="card-head"><h2>Water</h2></div><div id="dashWater"></div></div>
+        <div class="card"><div class="card-head"><h2>Electricity</h2></div><div id="dashElectricity"></div></div>
+        <div class="card"><div class="card-head"><h2>Budget</h2></div><div id="dashBudget"></div></div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card"><div class="card-head"><h2>Recent vehicle activity</h2></div><ul class="feed" id="dashActivity"></ul></div>
+        <div class="card"><div class="card-head"><h2>Recent emergency requests</h2></div><ul class="feed" id="dashEmergency"></ul></div>
+        <div class="card"><div class="card-head"><h2>Recent food deliveries</h2></div><ul class="feed" id="dashDelivery"></ul></div>
+      </div>
+    </section>
+
+    <!-- ============ 2. CITY MAP ============ -->
+    <section class="section" id="section-map">
+      <div class="section-head">
+        <h1>City Map</h1>
+        <p>Drawn from the real graph. Click an intersection, road or vehicle for details. Drag an intersection to move it.</p>
+      </div>
+      <div class="map-layout">
+        <div class="card map-card">
+          <div class="map-toolbar">
+            <button class="btn btn-primary btn-sm" id="mapAddIntersection">Add intersection</button>
+            <form class="inline-form" id="mapAddRoadForm">
+              <select id="mapRoadFrom" aria-label="From intersection"></select>
+              <select id="mapRoadTo" aria-label="To intersection"></select>
+              <input type="number" id="mapRoadLength" min="0" step="any" placeholder="Length (m)" aria-label="Road length">
+              <button class="btn btn-light btn-sm" type="submit">Add road</button>
+            </form>
+            <button class="btn btn-light btn-sm" id="clearHighlight">Clear route highlight</button>
+          </div>
+          <div class="map-wrap"><svg class="city-map" id="mainMap" viewBox="0 0 1000 620" role="img" aria-label="Interactive city map"></svg></div>
+          <div class="legend">
+            <span><i class="lg lg-house"></i>House</span>
+            <span><i class="lg lg-hospital"></i>Hospital</span>
+            <span><i class="lg lg-restaurant"></i>Restaurant</span>
+            <span><i class="lg lg-car"></i>Car</span>
+            <span><i class="lg lg-amb"></i>Ambulance</span>
+            <span><i class="lg lg-bike"></i>Delivery bike</span>
+            <span><i class="lg lg-green"></i>Entry signal green</span>
+            <span><i class="lg lg-red"></i>Yellow / red</span>
+          </div>
+        </div>
+        <div class="card detail-card">
+          <div class="card-head"><h2>Selection details</h2></div>
+          <div id="mapDetails" class="muted">Select an intersection, road or vehicle on the map.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. ROAD NETWORK ============ -->
+    <section class="section" id="section-roads">
+      <div class="section-head">
+        <h1>Road Network Management</h1>
+        <p>Bidirectional roads stored in an adjacency list. Each direction has capacity 3 and its own occupancy counter.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Add intersection</h2></div>
+          <p class="muted">Creates the next ID (limit 100 intersections).</p>
+          <button class="btn btn-primary" id="addIntersectionBtn">Add intersection</button>
+          <div class="card-head mt"><h2>Add road</h2></div>
+          <form class="form" id="addRoadForm">
+            <label>Starting intersection<select id="roadFrom"></select></label>
+            <label>Ending intersection<select id="roadTo"></select></label>
+            <label>Length (metres)<input type="number" id="roadLength" min="0" step="any" placeholder="e.g. 110"></label>
+            <button class="btn btn-primary" type="submit">Add road</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Adjacency list</h2></div>
+          <div id="adjacencyList" class="adjacency"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Roads</h2></div>
+        <div class="table-wrap"><table id="roadsTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 4. BUILDINGS ============ -->
+    <section class="section" id="section-buildings">
+      <div class="section-head">
+        <h1>Building Management</h1>
+        <p>House, Hospital and Restaurant only. Only houses have population (limit 100 buildings).</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Add building</h2></div>
+          <form class="form" id="addBuildingForm">
+            <label>Building ID<input type="text" id="buildingId" placeholder="e.g. H3" autocomplete="off"></label>
+            <label>Building type
+              <select id="buildingType">
+                <option value="House">House</option>
+                <option value="Hospital">Hospital</option>
+                <option value="Restaurant">Restaurant</option>
+              </select>
+            </label>
+            <label>Intersection<select id="buildingIntersection"></select></label>
+            <label>Population<input type="number" id="buildingPopulation" min="0" step="1" value="0"></label>
+            <button class="btn btn-primary" type="submit">Add building</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Buildings by type</h2></div>
+          <div class="kpi-grid kpi-compact" id="buildingKpis"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Building list</h2></div>
+        <div class="table-wrap"><table id="buildingsTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 5. POPULATION ============ -->
+    <section class="section" id="section-population">
+      <div class="section-head">
+        <h1>Population Management</h1>
+        <p>Total population is the sum of every house's population. Hospitals and restaurants add nothing.</p>
+      </div>
+      <div class="kpi-grid kpi-compact" id="populationKpis"></div>
+      <div class="card">
+        <div class="card-head"><h2>Population distribution</h2></div>
+        <div id="populationBars"></div>
+      </div>
+    </section>
+
+    <!-- ============ 6. TRAFFIC ============ -->
+    <section class="section" id="section-traffic">
+      <div class="section-head">
+        <h1>Traffic Management</h1>
+        <p>Road capacity, occupancy, the 70-second signal cycle and ambulance-first processing.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Signal cycle</h2></div>
+          <div id="signalCycle"></div>
+          <div class="legend mt">
+            <span><i class="lg lg-green"></i>Green = entry permitted</span>
+            <span><i class="lg lg-yellow"></i>Yellow = entry not permitted</span>
+            <span><i class="lg lg-red"></i>Red = entry not permitted</span>
+          </div>
+          <p class="note">Educational model from the C++ code: the signal depends only on whether the <b>destination</b> intersection ID is even or odd, not on the physical layout or turn direction.</p>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Processing order at the next tick</h2></div>
+          <div id="processingOrder"></div>
+          <p class="note">Ambulances go into a priority queue and are processed first (lower vehicle number first). All other vehicles follow FIFO order. Ambulances only get processing priority — they do not move other vehicles out of the way.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Live traffic by intersection</h2></div>
+        <div class="table-wrap"><table id="trafficTable"></table></div>
+        <p class="note">Occupancy is shown as occupied slots / capacity. Waiting vehicles do not occupy a road slot.</p>
+      </div>
+    </section>
+
+    <!-- ============ 7. VEHICLES ============ -->
+    <section class="section" id="section-vehicles">
+      <div class="section-head">
+        <h1>Vehicle Management</h1>
+        <p>Car 10 m/s, Ambulance 15 m/s, DeliveryBike 6 m/s. Limit 200 vehicles.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Create vehicle</h2></div>
+          <form class="form" id="vehicleForm">
+            <label>Vehicle type
+              <select id="vehicleType">
+                <option value="Car">Car</option>
+                <option value="Ambulance">Ambulance</option>
+                <option value="DeliveryBike">DeliveryBike</option>
+              </select>
+            </label>
+            <label>Status
+              <select id="vehicleMode">
+                <option value="travel">Travelling</option>
+                <option value="parked">Parked</option>
+              </select>
+            </label>
+            <label>Starting intersection<select id="vehicleStart"></select></label>
+            <label id="vehicleDestLabel">Destination intersection<select id="vehicleDest"></select></label>
+            <button class="btn btn-primary" type="submit">Create vehicle</button>
+          </form>
+          <p class="note" id="vehicleHint"></p>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Vehicle summary</h2></div>
+          <div class="kpi-grid kpi-compact" id="vehicleKpis"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>All vehicles</h2></div>
+        <div class="table-wrap"><table id="vehiclesTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 8. AMBULANCE ============ -->
+    <section class="section" id="section-ambulance">
+      <div class="section-head emergency">
+        <h1>Ambulance Emergency Service</h1>
+        <p>An ambulance leaves a hospital and takes the Dijkstra shortest route to the accident location at 15 m/s.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card card-emergency">
+          <div class="card-head"><h2>Request ambulance</h2></div>
+          <form class="form" id="ambulanceForm">
+            <label>Hospital<select id="ambHospital"></select></label>
+            <label>Accident intersection<select id="ambAccident"></select></label>
+            <button class="btn btn-danger" type="submit">Request ambulance</button>
+          </form>
+          <div id="ambResult"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Emergency dashboard</h2></div>
+          <div class="kpi-grid kpi-compact" id="ambKpis"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Ambulance journeys</h2></div>
+        <div class="table-wrap"><table id="ambTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 9. FOOD DELIVERY ============ -->
+    <section class="section" id="section-delivery">
+      <div class="section-head delivery">
+        <h1>Food Delivery Service</h1>
+        <p>A delivery bike leaves a restaurant and takes the Dijkstra shortest route to a house at 6 m/s.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card card-delivery">
+          <div class="card-head"><h2>Place delivery</h2></div>
+          <form class="form" id="deliveryForm">
+            <label>Restaurant<select id="delRestaurant"></select></label>
+            <label>Destination house<select id="delHouse"></select></label>
+            <button class="btn btn-warning" type="submit">Place delivery</button>
+          </form>
+          <div id="delResult"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Delivery dashboard</h2></div>
+          <div class="kpi-grid kpi-compact" id="delKpis"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Deliveries</h2></div>
+        <div class="table-wrap"><table id="delTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 10. DIJKSTRA PLANNER ============ -->
+    <section class="section" id="section-planner">
+      <div class="section-head">
+        <h1>Dijkstra Route Planner</h1>
+        <p>Finds the shortest route by road length only. It does not consider traffic, signal waiting time, vehicle speed or occupancy.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Find shortest path</h2></div>
+          <form class="form" id="plannerForm">
+            <label>Source intersection<select id="planSource"></select></label>
+            <label>Destination intersection<select id="planDest"></select></label>
+            <button class="btn btn-primary" type="submit">Find shortest path</button>
+          </form>
+          <div id="planResult"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Final distance and parent arrays</h2></div>
+          <div class="table-wrap"><table id="planArrays"></table></div>
+          <p class="note">dist[v] = shortest known distance from the source. parent[v] = previous intersection on that route, used to rebuild the path backwards.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Route on the map</h2></div>
+        <div class="map-wrap"><svg class="city-map" id="planMap" viewBox="0 0 1000 620" role="img" aria-label="Route on map"></svg></div>
+      </div>
+    </section>
+
+    <!-- ============ 11. WATER ============ -->
+    <section class="section" id="section-water">
+      <div class="section-head">
+        <h1>Water Management</h1>
+        <p>Demand = Population × 150 + Hospitals × 500 + Restaurants × 300 litres/day.</p>
+      </div>
+      <div class="kpi-grid kpi-compact" id="waterKpis"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Update water supply</h2></div>
+          <form class="form" id="waterForm">
+            <label>Water supply (litres/day)<input type="number" id="waterSupplyInput" min="0" step="any"></label>
+            <button class="btn btn-primary" type="submit">Update supply</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>How demand is calculated</h2></div>
+          <div id="waterFormula"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 12. ELECTRICITY ============ -->
+    <section class="section" id="section-electricity">
+      <div class="section-head">
+        <h1>Electricity Management</h1>
+        <p>Demand = Population × 2 + Hospitals × 50 + Restaurants × 30 kWh/day.</p>
+      </div>
+      <div class="kpi-grid kpi-compact" id="elecKpis"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Update electricity supply</h2></div>
+          <form class="form" id="elecForm">
+            <label>Electricity supply (kWh/day)<input type="number" id="elecSupplyInput" min="0" step="any"></label>
+            <button class="btn btn-primary" type="submit">Update supply</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>How demand is calculated</h2></div>
+          <div id="elecFormula"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 13. BUDGET ============ -->
+    <section class="section" id="section-budget">
+      <div class="section-head">
+        <h1>City Budget Management</h1>
+        <p>Initial budget ₹5,00,000. Allocations cannot exceed the remaining budget.</p>
+      </div>
+      <div class="kpi-grid kpi-compact" id="budgetKpis"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Allocate budget</h2></div>
+          <form class="form" id="budgetForm">
+            <label>Department
+              <select id="budgetDept">
+                <option value="">Select department</option>
+                <option>Roads</option>
+                <option>Water</option>
+                <option>Electricity</option>
+                <option>Healthcare</option>
+                <option>Traffic</option>
+              </select>
+            </label>
+            <label>Amount (₹)<input type="number" id="budgetAmount" min="0" step="any" placeholder="e.g. 50000"></label>
+            <button class="btn btn-primary" type="submit">Allocate budget</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Department-wise allocation</h2></div>
+          <div id="deptBars"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Allocation history</h2></div>
+        <div class="table-wrap"><table id="allocTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ============ 14. REPORTS ============ -->
+    <section class="section" id="section-reports">
+      <div class="section-head">
+        <h1>Simulation Reports</h1>
+        <p>Every value below is read from the current simulation state.</p>
+      </div>
+      <div class="report-grid" id="reportsArea"></div>
+    </section>
+
+    <!-- ============ 15. PROJECT INFORMATION ============ -->
+    <section class="section" id="section-info">
+      <div class="section-head">
+        <h1>Virtual City Simulator</h1>
+        <p>A Graph-Based City Management and Traffic Simulation System</p>
+      </div>
+      <div class="info-grid">
+        <div class="card">
+          <h2>About the project</h2>
+          <p>A small smart city modelled as a graph. Intersections are vertices and roads are weighted edges (weight = road length in metres). Buildings sit at intersections, vehicles travel along shortest routes, and a one-second simulation clock drives traffic signals, road capacity and utility consumption. This website is a browser version of the original C++ console program and follows the same rules.</p>
+        </div>
+        <div class="card">
+          <h2>Graphs and adjacency lists</h2>
+          <p><code>adjacencyList[i]</code> holds every road leaving intersection <i>i</i> as <code>{ to, length }</code>. Adding a road stores it in both directions, so roads are bidirectional. An adjacency list only stores real connections, so Dijkstra visits only actual neighbours.</p>
+        </div>
+        <div class="card">
+          <h2>Dijkstra's shortest-path algorithm</h2>
+          <p>Uses a distance array (all ∞, source = 0), a parent array, and a custom binary-heap min-priority queue of <code>(distance, intersection)</code>. The smallest entry is removed, outdated entries are skipped, and each neighbour is relaxed if <code>dist[u] + length &lt; dist[v]</code>. The path is rebuilt by following <code>parent[]</code> back from the destination and reversing it. Edge weight is road length only.</p>
+        </div>
+        <div class="card">
+          <h2>Queues and priority queues</h2>
+          <p>Every simulation second, active ambulances go into a priority queue and are processed first, lower vehicle number first. All other active vehicles go into a normal FIFO queue and are processed afterwards in creation order. Dijkstra uses a separate min-priority queue.</p>
+        </div>
+        <div class="card">
+          <h2>Traffic signal simulation</h2>
+          <p>A 70-second cycle based on <code>time % 70</code>. Roads leading to even-numbered intersections are green for seconds 0–29, yellow 30–34 and red 35–69. Roads leading to odd-numbered intersections are red 0–34, green 35–64 and yellow 65–69. Only green allows a vehicle to enter a road.</p>
+        </div>
+        <div class="card">
+          <h2>Road capacity</h2>
+          <p>Each road direction holds at most 3 vehicles. A vehicle increments the counter when it enters a road and decrements it when it reaches the next intersection. If the road is full, or the signal is not green, the vehicle waits at the intersection without taking a slot.</p>
+        </div>
+        <div class="card">
+          <h2>Vehicle management</h2>
+          <p>Vehicles are Car (10 m/s), Ambulance (15 m/s) and DeliveryBike (6 m/s), each with a precomputed Dijkstra route. Statuses are PARKED, MOVING, WAITING and COMPLETED. Distance travelled is added up from the actual movement in each second.</p>
+        </div>
+        <div class="card">
+          <h2>Emergency and food delivery routing</h2>
+          <p>An ambulance must start at an intersection with a hospital. A delivery bike must start at a restaurant and end at a house. Both use the same Dijkstra route calculation and the same simulation engine as every other vehicle.</p>
+        </div>
+        <div class="card">
+          <h2>Resource management</h2>
+          <p>Water demand = population × 150 + hospitals × 500 + restaurants × 300 litres/day. Electricity demand = population × 2 + hospitals × 50 + restaurants × 30 kWh/day. Each simulation advance adds <code>daily demand × seconds / 86400</code> to consumption.</p>
+        </div>
+        <div class="card">
+          <h2>Budget allocation</h2>
+          <p>The city starts with ₹5,00,000. An allocation needs a department and a positive amount no larger than the remaining budget. A successful allocation lowers the remaining budget, raises total spending and is added to the history.</p>
+        </div>
+        <div class="card">
+          <h2>Technology</h2>
+          <p>HTML5, CSS3 and vanilla JavaScript (ES6) only. No frameworks, libraries or server. The map is SVG drawn by JavaScript. The city is saved in the browser's localStorage, so a refresh keeps your progress.</p>
+        </div>
+        <div class="card">
+          <h2>What this project does not do</h2>
+          <p>No artificial intelligence, machine learning, GPS tracking or real-world traffic data. Dijkstra finds the shortest route by length, not the fastest or least congested one.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast-area" id="toastArea" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
