@@ -1,9 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <utility>
 #include <queue>
-#include <functional>
 using namespace std;
 
 const int MAX = 100;
