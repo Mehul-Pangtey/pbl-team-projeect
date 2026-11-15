@@ -62,7 +62,7 @@ Tested on the built-in demo city (5 intersections, 6 roads). Every route found b
 - On the same route, the ambulance (15 m/s) arrives in 12 s, compared with 17 s for a car (10 m/s).
 - Ambulance priority changes the processing order, but not travel time, because vehicles do not slow each other down yet.
 
-**Limitations:** no congestion model, one order per delivery trip, and a maximum of 100 intersections.
+**Limitations:** no congestion model, one order per delivery trip and a maximum of 100 intersections.
 
 ---
 
