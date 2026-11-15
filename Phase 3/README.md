@@ -66,18 +66,19 @@ Tested on the built-in demo city (5 intersections, 6 roads). Every route found b
 
 ---
 
-## 🗺️ Milestones
+## 🗺️ Project Milestones
 
-- [x] Proposal & Dashboard Design
-- [x] Road Network, Buildings & Vehicles
-- [x] Dijkstra Routing
-- [x] Ambulance & Food-Delivery Services
-- [x] Traffic Handling (Queue & Priority Queue)
-- [x] Water, Electricity & Budget Modules
-- [x] Console City Dashboard
-- [x] Testing & Evaluation
-- [ ] Final Demonstration
-
+- [x] Requirement Analysis & Proposal Design
+- [x] Interface Design & Dashboard Layout
+- [x] Road Network Graph Implementation
+- [x] Building & Population Module
+- [x] Vehicle Management 
+- [x] Dijkstra's Shortest-Path Integration
+- [x] Emergency & Food-Delivery Routing
+- [x] Traffic Management using Queues & Priority Queues
+- [x] Resources & City Finance Integration
+- [x] Complete System Integration and Testing
+- [x] Final Demonstration
 ---
 
 ## 🚀 Getting Started
