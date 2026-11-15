@@ -1,0 +1,116 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <utility>
+using namespace std;
+// Traffic Management Data
+const int MAX = 100;
+// Traffic-related members inside RoadNetwork class
+int roadCapacity[MAX][MAX] = {};
+int roadOccupancy[MAX][MAX] = {};
+// Check whether a vehicle can enter a road
+bool canEnterRoad(int from, int to) {
+    return roadCapacity[from][to] > 0 &&
+           roadOccupancy[from][to] < roadCapacity[from][to];
+}
+// Enter a road
+void enterRoad(int from, int to) {
+    roadOccupancy[from][to]++;
+}
+// Leave a road
+void leaveRoad(int from, int to) {
+    if (roadOccupancy[from][to] > 0)
+        roadOccupancy[from][to]--;
+}
+// Traffic Signal Management
+bool signalAllows(int next, int time) {
+    int phase = time % 70;
+    int greenGroup = (phase < 35) ? 0 : 1;
+    return (phase % 35) < 30 &&
+           (next % 2 == greenGroup);
+}
+// Get traffic signal status
+string signalState(int next, int time) {
+    int phase = time % 70;
+    int group = next % 2;
+    if (group == 0) {
+        if (phase < 30) return "GREEN";
+        if (phase < 35) return "YELLOW";
+        return "RED";
+    }
+    if (phase >= 35 && phase < 65)
+        return "GREEN";
+
+    if (phase >= 65)
+        return "YELLOW";
+
+    return "RED";
+}
+// Traffic Processing Order
+// Ambulances get priority; normal vehicles follow FIFO.
+void buildProcessingOrder(
+    Vehicle vehicles[],
+    int count,
+    vector<int> &processingOrder
+) {
+    priority_queue<pair<int, int>> emergencyQueue;
+    queue<int> normalQueue;
+
+    for (int i = 0; i < count; i++) {
+        if (vehicles[i].parked || vehicles[i].completed)
+            continue;
+
+        if (vehicles[i].type == "Ambulance")
+            emergencyQueue.push({3, -i});
+        else
+            normalQueue.push(i);
+    }
+    while (!emergencyQueue.empty()) {
+        processingOrder.push_back(
+            -emergencyQueue.top().second
+        );
+        emergencyQueue.pop();
+    }
+
+    while (!normalQueue.empty()) {
+        processingOrder.push_back(normalQueue.front());
+        normalQueue.pop();
+    }
+}
+// Live Traffic Visualization
+void displayTrafficVisualization(
+    RoadNetwork &city,
+    VehicleManager &vehicles
+) {
+    cout << "\n--- LIVE TRAFFIC VISUALIZATION ---\n";
+    for (int i = 0; i < city.intersections; i++) {
+        int atIntersection = 0;
+        for (int j = 0; j < vehicles.count; j++) {
+            Vehicle &v = vehicles.vehicles[j];
+            if (!v.parked && !v.completed &&
+                v.current == i)
+                atIntersection++;
+        }
+        cout << "I" << i
+             << " [active vehicles: "
+             << atIntersection << "] -> ";
+        if (city.adj[i].empty())
+            cout << "No connected roads";
+        for (const auto &road : city.adj[i]) {
+            cout << "I" << road.first
+                 << " (" << road.second
+                 << "m, traffic "
+                 << city.roadOccupancy[i][road.first]
+                 << "/" << city.roadCapacity[i][road.first]
+                 << ", signal "
+                 << city.signalState(
+                        road.first,
+                        static_cast<int>(vehicles.currentTime)
+                    )
+                 << ") ";
+        }
+        cout << "\n";
+    }
+    cout << "Traffic is shown as occupied road slots / road capacity.\n";
+    cout << "Signal phases alternate by exit ID parity (demo model).\n";
+}
