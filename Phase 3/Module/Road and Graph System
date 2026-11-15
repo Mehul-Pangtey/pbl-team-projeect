@@ -1,0 +1,363 @@
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
+#include <queue>
+#include <functional>
+using namespace std;
+
+const int MAX = 100;
+
+// ==========================================
+// ROAD AND GRAPH SYSTEM
+// ==========================================
+
+class RoadNetwork {
+public:
+
+    // Graph Representation using Adjacency List
+    // Each intersection stores connected intersections and road distances.
+    vector<pair<int, double>> adj[MAX];
+
+    int intersections;
+
+    // Road Capacity and Occupancy Management
+    int roadCapacity[MAX][MAX] = {};
+    int roadOccupancy[MAX][MAX] = {};
+
+    // Constructor: Initialize number of intersections
+    RoadNetwork(int n = 5) {
+        intersections = n;
+    }
+
+    // Validate Intersection ID
+    bool valid(int id) {
+        return id >= 0 && id < intersections;
+    }
+
+    // Intersection Management: Add a new intersection
+    int addIntersection() {
+        if (intersections >= MAX)
+            return -1;
+
+        return intersections++;
+    }
+
+    // Road Management: Add a bidirectional road
+    bool addRoad(int a, int b, double length) {
+
+        if (!valid(a) || !valid(b) || a == b || length <= 0)
+            return false;
+
+        // Prevent duplicate roads
+        for (const auto &road : adj[a]) {
+            if (road.first == b)
+                return false;
+        }
+
+        // Add road in both directions
+        adj[a].push_back({b, length});
+        adj[b].push_back({a, length});
+
+        // Set road capacity to 3 vehicles
+        roadCapacity[a][b] = roadCapacity[b][a] = 3;
+
+        return true;
+    }
+
+    // Check Whether a Vehicle Can Enter a Road
+    bool canEnterRoad(int from, int to) {
+        return valid(from) && valid(to) &&
+               roadCapacity[from][to] > 0 &&
+               roadOccupancy[from][to] < roadCapacity[from][to];
+    }
+
+    // Increase Road Occupancy When Vehicle Enters
+    void enterRoad(int from, int to) {
+        if (valid(from) && valid(to))
+            roadOccupancy[from][to]++;
+    }
+
+    // Decrease Road Occupancy When Vehicle Leaves
+    void leaveRoad(int from, int to) {
+        if (valid(from) && valid(to) &&
+            roadOccupancy[from][to] > 0)
+            roadOccupancy[from][to]--;
+    }
+
+    // Traffic Signal Management
+    // Even and odd exits receive alternating green phases.
+    bool signalAllows(int /*intersection*/, int next, int time) {
+
+        int phase = time % 70;
+        int greenGroup = (phase < 35) ? 0 : 1;
+
+        return (phase % 35) < 30 &&
+               (next % 2 == greenGroup);
+    }
+
+    // Display Current Traffic Signal State
+    string signalState(int next, int time) {
+
+        int phase = time % 70;
+        int group = next % 2;
+
+        if (group == 0) {
+            if (phase < 30) return "GREEN";
+            if (phase < 35) return "YELLOW";
+            return "RED";
+        }
+
+        if (phase >= 35 && phase < 65) return "GREEN";
+        if (phase >= 65) return "YELLOW";
+
+        return "RED";
+    }
+
+    // ==========================================
+    // DISPLAY ROAD NETWORK
+    // ==========================================
+
+    void displayNetwork() {
+
+        cout << "\n--- ROAD NETWORK ---\n";
+
+        for (int i = 0; i < intersections; i++) {
+
+            cout << "I" << i << ": ";
+            bool found = false;
+
+            for (const auto &road : adj[i]) {
+
+                cout << "I" << road.first << " ("
+                     << road.second << " m, capacity "
+                     << roadCapacity[i][road.first] << ") ";
+
+                found = true;
+            }
+
+            if (!found)
+                cout << "No roads";
+
+            cout << "\n";
+        }
+    }
+
+    // ==========================================
+    // DIJKSTRA'S SHORTEST PATH ALGORITHM
+    // ==========================================
+
+    int shortestPath(int source, int destination, int path[]) {
+
+        // Validate source and destination
+        if (!valid(source) || !valid(destination))
+            return 0;
+
+        const double INF = 1e18;
+
+        double dist[MAX];
+        int parent[MAX];
+
+        // Initialize distances and parent array
+        for (int i = 0; i < intersections; i++) {
+            dist[i] = INF;
+            parent[i] = -1;
+        }
+
+        // Min Priority Queue
+        // Stores {distance, intersection}
+        priority_queue<
+            pair<double, int>,
+            vector<pair<double, int>>,
+            greater<pair<double, int>>
+        > pq;
+
+        // Initialize source distance
+        dist[source] = 0;
+        pq.push({0, source});
+
+        // Dijkstra's Algorithm
+        while (!pq.empty()) {
+
+            double currentDist = pq.top().first;
+            int u = pq.top().second;
+            pq.pop();
+
+            // Ignore outdated queue entries
+            if (currentDist > dist[u])
+                continue;
+
+            // Visit all neighboring intersections
+            for (const auto &road : adj[u]) {
+
+                int v = road.first;
+                double length = road.second;
+
+                double newDist = dist[u] + length;
+
+                // Relaxation: Update shorter distance
+                if (newDist < dist[v]) {
+
+                    dist[v] = newDist;
+                    parent[v] = u;
+
+                    pq.push({newDist, v});
+                }
+            }
+        }
+
+        // Check if destination is reachable
+        if (dist[destination] == INF)
+            return 0;
+
+        // ==========================================
+        // PATH RECONSTRUCTION
+        // ==========================================
+
+        int temp[MAX];
+        int count = 0;
+
+        // Trace path backwards using parent array
+        for (int at = destination; at != -1; at = parent[at])
+            temp[count++] = at;
+
+        // Reverse path to get source -> destination
+        for (int i = 0; i < count; i++)
+            path[i] = temp[count - 1 - i];
+
+        return count;
+    }
+};
+
+// ==========================================
+// DISPLAY SHORTEST ROUTE
+// ==========================================
+
+void planRoute(RoadNetwork &city) {
+
+    int source, destination, path[MAX];
+
+    cout << "Enter source and destination intersection IDs: ";
+
+    if (!(cin >> source >> destination)) {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Invalid input.\n";
+        return;
+    }
+
+    // Find shortest path using Dijkstra
+    int n = city.shortestPath(source, destination, path);
+
+    if (n == 0) {
+        cout << "No route exists or invalid intersection.\n";
+        return;
+    }
+
+    double distance = 0;
+
+    cout << "Shortest route: ";
+
+    // Display path and calculate total distance
+    for (int i = 0; i < n; i++) {
+
+        if (i) {
+            cout << " -> ";
+
+            for (const auto &road : city.adj[path[i - 1]]) {
+
+                if (road.first == path[i]) {
+                    distance += road.second;
+                    break;
+                }
+            }
+        }
+
+        cout << "I" << path[i];
+    }
+
+    cout << "\nTotal distance: "
+         << distance << " metres\n";
+}
+
+// ==========================================
+// MAIN FUNCTION
+// ==========================================
+
+int main() {
+
+    // Initialize Road Network with 5 intersections
+    RoadNetwork city(5);
+
+    // Initial Road Connections (Intersection, Intersection, Distance)
+    city.addRoad(0, 1, 100);
+    city.addRoad(1, 2, 80);
+    city.addRoad(2, 3, 100);
+    city.addRoad(3, 4, 80);
+    city.addRoad(4, 2, 90);
+    city.addRoad(1, 3, 120);
+
+    int choice;
+
+    // Menu-driven Road and Graph System
+    while (true) {
+
+        cout << "\n===== ROAD AND GRAPH SYSTEM =====\n";
+        cout << "1. Display Road Network\n";
+        cout << "2. Add Intersection\n";
+        cout << "3. Add Road\n";
+        cout << "4. Plan Shortest Route (Dijkstra)\n";
+        cout << "0. Exit\n";
+        cout << "Enter choice: ";
+
+        cin >> choice;
+
+        if (choice == 0) {
+            cout << "Exiting...\n";
+            break;
+        }
+
+        // Display Road Network
+        else if (choice == 1) {
+            city.displayNetwork();
+        }
+
+        // Add New Intersection
+        else if (choice == 2) {
+
+            int id = city.addIntersection();
+
+            if (id == -1)
+                cout << "Intersection limit reached.\n";
+            else
+                cout << "Created I" << id << "\n";
+        }
+
+        // Add New Road
+        else if (choice == 3) {
+
+            int a, b;
+            double length;
+
+            cout << "Enter start, end and length: ";
+            cin >> a >> b >> length;
+
+            if (city.addRoad(a, b, length))
+                cout << "Road added.\n";
+            else
+                cout << "Invalid road or duplicate road.\n";
+        }
+
+        // Find Shortest Route
+        else if (choice == 4) {
+            planRoute(city);
+        }
+
+        else {
+            cout << "Invalid option.\n";
+        }
+    }
+
+    return 0;
+}
