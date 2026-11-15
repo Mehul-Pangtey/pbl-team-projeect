@@ -124,7 +124,7 @@ The **Virtual City Simulator** is developed by a team of six members.
 | Abhinav Chauhan | Section A | 2518120 | 25101280513 | kumarabhinav4545@gmail.com |
 | Anjali Nawani | Section C | 2518199 | 25101281728 | anjali.nawani19@gmail.com |
 | Shaurya Goel | Section ML1 | 2518637 | 2510011439 | goelshaurya7488@gmail.com |
-| Piyush Bani Bani | Section C | 2518514 | 25101280853 | pbani5833@gmail.com |
+| Piyush Bani  | Section C | 2518514 | 25101280853 | pbani5833@gmail.com |
 
 ---
 
