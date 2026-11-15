@@ -1,0 +1,40 @@
+//this section describe the working part of delivery which cover a distance from a specific restuarant to a house 
+void placeFoodDelivery(RoadNetwork &city, VehicleManager &vehicles) {
+    cout << "\n--- FOOD DELIVERY SERVICE ---\n";
+    int restaurant = selectBuildingIntersection(
+        city, "Restaurant", "Select restaurant number: ");
+    if (restaurant == -1) return;
+
+    int house = selectBuildingIntersection(
+        city, "House", "Select destination house number: ");
+    if (house == -1) return;
+
+    cout << "Finding shortest route from Restaurant at I" << restaurant
+         << " to House at I" << house << "...\n";
+    vehicles.create("DeliveryBike", restaurant, house, false, city);
+}
+
+//this section describe the working part of ambulance from hospital to the accident road
+void requestAmbulance(RoadNetwork &city, VehicleManager &vehicles) {
+    cout << "\n--- AMBULANCE EMERGENCY SERVICE ---\n";
+    int hospital = selectBuildingIntersection(
+        city, "Hospital", "Select hospital number: ");
+    if (hospital == -1) return;
+
+    int accident;
+    cout << "Enter intersection ID where the accident occurred: I";
+    if (!(cin >> accident)) {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        cout << "Invalid input.\n";
+        return;
+    }
+    if (!city.valid(accident)) {
+        cout << "Invalid accident intersection.\n";
+        return;
+    }
+
+    cout << "Finding shortest route from Hospital at I" << hospital
+         << " to accident location I" << accident << "...\n";
+    vehicles.create("Ambulance", hospital, accident, false, city);
+}
