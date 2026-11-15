@@ -1,0 +1,160 @@
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+// City Management Data
+const int MAX = 100;
+
+// Utility and Finance Management
+class CityManagement {
+private:
+    double waterSupply, electricitySupply;
+    double waterConsumed, electricityConsumed;
+    double remainingBudget, totalSpent;
+
+    vector<pair<string, double>> allocations;
+
+public:
+
+    // Initialize city resources and budget
+    CityManagement() {
+        waterSupply = 10000;
+        electricitySupply = 5000;
+
+        waterConsumed = 0;
+        electricityConsumed = 0;
+
+        remainingBudget = 500000;
+        totalSpent = 0;
+    }
+
+    // Calculate Water and Electricity Demand
+    void calculateDemand(
+        RoadNetwork &city,
+        double &water,
+        double &electricity
+    ) {
+        int population = 0;
+        int hospitals = 0;
+        int restaurants = 0;
+
+        for (int i = 0; i < city.buildingCount; i++) {
+            Building &b = city.buildings[i];
+
+            if (b.type == "House")
+                population += b.population;
+            else if (b.type == "Hospital")
+                hospitals++;
+            else if (b.type == "Restaurant")
+                restaurants++;
+        }
+
+        // Daily utility consumption assumptions
+        water = population * 150.0
+              + hospitals * 500.0
+              + restaurants * 300.0;
+
+        electricity = population * 2.0
+                    + hospitals * 50.0
+                    + restaurants * 30.0;
+    }
+
+    // Update Water and Electricity Supply
+    void setSupply(double water, double electricity) {
+        if (water < 0 || electricity < 0) {
+            cout << "Supply cannot be negative.\n";
+            return;
+        }
+
+        waterSupply = water;
+        electricitySupply = electricity;
+
+        cout << "Water and electricity supply updated.\n";
+    }
+
+    // Track Utility Consumption During Simulation
+    void updateConsumption(RoadNetwork &city, int seconds) {
+        double water, electricity;
+
+        calculateDemand(city, water, electricity);
+
+        waterConsumed += water * seconds / 86400.0;
+        electricityConsumed += electricity * seconds / 86400.0;
+    }
+
+    // Display Water and Electricity Distribution
+    void displayUtilities(RoadNetwork &city) {
+        double water, electricity;
+
+        calculateDemand(city, water, electricity);
+
+        cout << fixed << setprecision(2);
+
+        cout << "\n--- WATER AND ELECTRICITY DISTRIBUTION ---\n";
+
+        cout << "Water demand: " << water << " litres/day\n";
+        cout << "Water supply: " << waterSupply << " litres/day\n";
+
+        cout << "Water status: "
+             << (waterSupply >= water ? "SUFFICIENT" : "SHORTAGE")
+             << "\n";
+
+        cout << "Electricity demand: " << electricity << " kWh/day\n";
+        cout << "Electricity supply: " << electricitySupply << " kWh/day\n";
+
+        cout << "Electricity status: "
+             << (electricitySupply >= electricity ? "SUFFICIENT" : "SHORTAGE")
+             << "\n";
+
+        cout << "Water consumed in simulation: "
+             << waterConsumed << " litres\n";
+
+        cout << "Electricity consumed in simulation: "
+             << electricityConsumed << " kWh\n";
+    }
+
+    // Display City Budget
+    void displayBudget() {
+        cout << fixed << setprecision(2);
+
+        cout << "\n--- CITY BUDGET ---\n";
+
+        cout << "Initial budget: Rs. "
+             << remainingBudget + totalSpent << "\n";
+
+        cout << "Spent: Rs. " << totalSpent << "\n";
+
+        cout << "Remaining: Rs. " << remainingBudget << "\n";
+
+        if (allocations.empty())
+            cout << "No allocations yet.\n";
+
+        for (const auto &a : allocations) {
+            cout << a.first << ": Rs. " << a.second << "\n";
+        }
+    }
+
+    // Allocate Budget to City Departments
+    void allocateBudget(string department, double amount) {
+        if (department.empty() || amount <= 0) {
+            cout << "Enter a valid department and positive amount.\n";
+            return;
+        }
+
+        if (amount > remainingBudget) {
+            cout << "Insufficient city budget.\n";
+            return;
+        }
+
+        remainingBudget -= amount;
+        totalSpent += amount;
+
+        allocations.push_back({department, amount});
+
+        cout << "Rs. " << amount
+             << " allocated to " << department << ".\n";
+    }
+};
