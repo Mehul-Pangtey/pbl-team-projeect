@@ -1,13 +1,15 @@
 #include <iostream>
-#include <string>
-#include <vector>
 #include <queue>
+#include <string>
+#include <utility>
+#include <vector>
 using namespace std;
 
 const int MAX = 100;
 const int MAXV = 200;
 
-struct Vehicle {
+struct Vehicle
+{
     int id;
     string type;
     int current, destination;
@@ -17,70 +19,80 @@ struct Vehicle {
     bool onRoad, waiting;
 };
 
-class VehicleManager {
-public:
+class VehicleManager
+{
+  public:
     Vehicle vehicles[MAXV];
     int count;
     double currentTime;
 
-    VehicleManager() {
+    VehicleManager ()
+    {
         count = 0;
         currentTime = 0;
     }
 
-    int create(string type, int start, int destination,
-               bool parked, RoadNetwork &city) {
-        if (count >= MAXV) {
-            cout << "Vehicle limit reached.\n";
-            return -1;
-        }
+    int
+    create (string type, int start, int destination, bool parked,
+            RoadNetwork &city)
+    {
+        if (count >= MAXV)
+            {
+                cout << "Vehicle limit reached.\n";
+                return -1;
+            }
 
-        if (type != "Car" &&
-            type != "Ambulance" &&
-            type != "DeliveryBike") {
-            cout << "Invalid vehicle type.\n";
-            return -1;
-        }
+        if (type != "Car" && type != "Ambulance" && type != "DeliveryBike")
+            {
+                cout << "Invalid vehicle type.\n";
+                return -1;
+            }
 
-        if (!city.valid(start)) {
-            cout << "Invalid starting intersection.\n";
-            return -1;
-        }
+        if (!city.valid (start))
+            {
+                cout << "Invalid starting intersection.\n";
+                return -1;
+            }
 
-        if (type == "Ambulance" &&
-            !city.hasBuilding(start, "Hospital")) {
-            cout << "Ambulance must start at a Hospital.\n";
-            return -1;
-        }
+        if (type == "Ambulance" && !city.hasBuilding (start, "Hospital"))
+            {
+                cout << "Ambulance must start at a Hospital.\n";
+                return -1;
+            }
 
-        if (type == "DeliveryBike" &&
-            !city.hasBuilding(start, "Restaurant")) {
-            cout << "DeliveryBike must start at a Restaurant.\n";
-            return -1;
-        }
+        if (type == "DeliveryBike" && !city.hasBuilding (start, "Restaurant"))
+            {
+                cout << "DeliveryBike must start at a Restaurant.\n";
+                return -1;
+            }
 
         int path[MAX];
         int size = 0;
 
-        if (!parked) {
-            if (!city.valid(destination)) {
-                cout << "Invalid destination.\n";
-                return -1;
-            }
+        if (!parked)
+            {
+                if (!city.valid (destination))
+                    {
+                        cout << "Invalid destination.\n";
+                        return -1;
+                    }
 
-            if (type == "DeliveryBike" &&
-                !city.hasBuilding(destination, "House")) {
-                cout << "Food delivery destination must contain a House.\\n";
-                return -1;
-            }
+                if (type == "DeliveryBike"
+                    && !city.hasBuilding (destination, "House"))
+                    {
+                        cout << "Food delivery destination must contain a "
+                                "House.\\n";
+                        return -1;
+                    }
 
-            size = city.shortestPath(start, destination, path);
+                size = city.shortestPath (start, destination, path);
 
-            if (size == 0) {
-                cout << "No route exists.\n";
-                return -1;
+                if (size == 0)
+                    {
+                        cout << "No route exists.\n";
+                        return -1;
+                    }
             }
-        }
 
         Vehicle &v = vehicles[count];
 
@@ -97,8 +109,7 @@ public:
         v.onRoad = false;
         v.waiting = false;
 
-        v.speed = type == "Ambulance" ? 15 :
-                  type == "DeliveryBike" ? 6 : 10;
+        v.speed = type == "Ambulance" ? 15 : type == "DeliveryBike" ? 6 : 10;
 
         for (int i = 0; i < size; i++)
             v.route[i] = path[i];
@@ -107,27 +118,143 @@ public:
 
         cout << type << " V" << v.id;
 
-        if (parked) {
-            cout << " parked at I" << start;
-        } else {
-            cout << "\nRoute: ";
-
-            for (int i = 0; i < size; i++) {
-                if (i > 0)
-                    cout << " -> ";
-
-                cout << "I" << path[i];
+        if (parked)
+            {
+                cout << " parked at I" << start;
             }
+        else
+            {
+                cout << "\nRoute: ";
 
-            if (v.completed)
-                cout << "\nAlready at destination.";
-        }
+                for (int i = 0; i < size; i++)
+                    {
+                        if (i > 0)
+                            cout << " -> ";
+
+                        cout << "I" << path[i];
+                    }
+
+                if (v.completed)
+                    cout << "\nAlready at destination.";
+            }
 
         cout << "\n";
         return v.id;
     }
 
-    void displayStatus() {
+    void
+    advance (RoadNetwork &city, int seconds)
+    {
+        for (int t = 0; t < seconds; t++)
+            {
+                currentTime++;
+
+                priority_queue<pair<int, int> > emergencyQueue;
+                queue<int> normalQueue;
+
+                for (int i = 0; i < count; i++)
+                    {
+                        if (vehicles[i].parked || vehicles[i].completed)
+                            continue;
+                        if (vehicles[i].type == "Ambulance")
+                            emergencyQueue.push ({ 3, -i });
+                        else
+                            normalQueue.push (i);
+                    }
+
+                vector<int> processingOrder;
+                while (!emergencyQueue.empty ())
+                    {
+                        processingOrder.push_back (
+                            -emergencyQueue.top ().second);
+                        emergencyQueue.pop ();
+                    }
+                while (!normalQueue.empty ())
+                    {
+                        processingOrder.push_back (normalQueue.front ());
+                        normalQueue.pop ();
+                    }
+
+                for (int i : processingOrder)
+                    {
+                        Vehicle &v = vehicles[i];
+                        if (v.parked || v.completed)
+                            continue;
+
+                        int next = v.route[v.nextIndex];
+                        double length = 0;
+                        for (const auto &road : city.adj[v.current])
+                            {
+                                if (road.first == next)
+                                    {
+                                        length = road.second;
+                                        break;
+                                    }
+                            }
+
+                        if (length <= 0)
+                            {
+                                v.completed = true;
+                                continue;
+                            }
+
+                        if (!v.onRoad)
+                            {
+                                if (!city.signalAllows (
+                                        v.current, next,
+                                        static_cast<int> (currentTime)))
+                                    {
+                                        v.waiting = true;
+                                        continue;
+                                    }
+                                if (!city.canEnterRoad (v.current, next))
+                                    {
+                                        v.waiting = true;
+                                        continue;
+                                    }
+                                city.enterRoad (v.current, next);
+                                v.onRoad = true;
+                                v.waiting = false;
+                            }
+
+                        double remaining = length - v.distance;
+                        double movement = v.speed;
+
+                        if (movement >= remaining)
+                            {
+                                v.totalDistance += remaining;
+                                v.distance = 0;
+                                city.leaveRoad (v.current, next);
+                                v.onRoad = false;
+                                v.current = next;
+                                v.nextIndex++;
+
+                                cout << "V" << v.id << " reached I" << next
+                                     << " at " << currentTime << " seconds.\n";
+
+                                if (v.current == v.destination
+                                    || v.nextIndex >= v.routeSize)
+                                    {
+                                        v.completed = true;
+                                        cout << "V" << v.id
+                                             << " journey completed.\n";
+                                    }
+                            }
+                        else
+                            {
+                                v.distance += movement;
+                                v.totalDistance += movement;
+                                v.waiting = false;
+                            }
+                    }
+            }
+
+        cout << "Simulation advanced by " << seconds << " seconds.\n";
+    }
+
+    void
+    displayStatus ()
+    {
         cout << "\n--- SIMULATION STATUS ---\n";
         cout << "Time: " << currentTime << " seconds\n";
 
@@ -135,41 +262,45 @@ public:
         int moving = 0;
         int completed = 0;
 
-        for (int i = 0; i < count; i++) {
-            Vehicle &v = vehicles[i];
+        for (int i = 0; i < count; i++)
+            {
+                Vehicle &v = vehicles[i];
 
-            cout << "\nV" << v.id
-                 << " [" << v.type << "] ";
+                cout << "\nV" << v.id << " [" << v.type << "] ";
 
-            if (v.parked) {
-                cout << "PARKED at I" << v.current;
-                parked++;
-            } else if (v.completed) {
-                cout << "COMPLETED at I" << v.current;
-                completed++;
-            } else if (v.waiting) {
-                cout << "WAITING at I" << v.current
-                     << " for road capacity / green signal";
-                moving++;
-            } else {
-                cout << "MOVING from I" << v.current
-                     << " to I" << v.route[v.nextIndex];
-                moving++;
+                if (v.parked)
+                    {
+                        cout << "PARKED at I" << v.current;
+                        parked++;
+                    }
+                else if (v.completed)
+                    {
+                        cout << "COMPLETED at I" << v.current;
+                        completed++;
+                    }
+                else if (v.waiting)
+                    {
+                        cout << "WAITING at I" << v.current
+                             << " for road capacity / green signal";
+                        moving++;
+                    }
+                else
+                    {
+                        cout << "MOVING from I" << v.current << " to I"
+                             << v.route[v.nextIndex];
+                        moving++;
+                    }
+
+                cout << "\nDistance travelled: " << v.totalDistance << " m";
+
+                if (!v.parked && !v.completed && v.onRoad)
+                    cout << "\nProgress on current road: " << v.distance
+                         << " m";
+
+                cout << "\n";
             }
 
-            cout << "\nDistance travelled: "
-                 << v.totalDistance << " m";
-
-            if (!v.parked && !v.completed && v.onRoad)
-                cout << "\nProgress on current road: "
-                     << v.distance << " m";
-
-            cout << "\n";
-        }
-
-        cout << "\nTotal vehicles: " << count
-             << "\nMoving: " << moving
-             << "\nParked: " << parked
-             << "\nCompleted: " << completed << "\n";
+        cout << "\nTotal vehicles: " << count << "\nMoving: " << moving
+             << "\nParked: " << parked << "\nCompleted: " << completed << "\n";
     }
 };
